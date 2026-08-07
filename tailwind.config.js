@@ -9,28 +9,27 @@ export default {
       colors: {
         background: '#F9FAFB',
         primary: {
-          DEFAULT: '#FBBF24', // Sophisticated Gold/Yellow
-          light: '#FDE68A',
-          dark: '#F59E0B',
+          DEFAULT: '#F59E0B', // Orange/Amber
+          dark: '#D97706',
         },
         secondary: {
-          DEFAULT: '#14B8A6', // Teal for accents
+          DEFAULT: '#48C9B0', // Teal
+          dark: '#1ABC9C',
         },
         lost: {
-          bg: '#FFE4E6', // Muted Rose background
-          text: '#E11D48', // Deep Rose text
+          bg: '#FEF3C7',
+          text: '#D97706',
         },
         found: {
-          bg: '#D1FAE5', // Muted Emerald background
-          text: '#059669', // Deep Emerald text
+          bg: '#E6FFFA',
+          text: '#0D9488',
         }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        'card': '0 2px 8px -2px rgba(0, 0, 0, 0.05), 0 4px 12px -4px rgba(0, 0, 0, 0.05)',
-        'card-hover': '0 10px 24px -4px rgba(0, 0, 0, 0.08), 0 8px 16px -6px rgba(0, 0, 0, 0.04)',
+        'card': '0 2px 8px -2px rgba(0, 0, 0, 0.05)',
       }
     },
   },

@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import ItemDetails from './pages/ItemDetails'
+import Messages from './pages/Messages'
 import BottomNav from './components/BottomNav'
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/item/:id" element={<ItemDetails />} />
+            <Route path="/messages" element={<Messages />} />
             {/* Future routes: /report, /my-reports */}
           </Routes>
         </main>
