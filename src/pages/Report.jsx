@@ -12,7 +12,7 @@ export default function Report() {
   
   const [reportType, setReportType] = useState(initialType || null);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isMatch, setIsMatch] = useState(false);
+  const [matchItem, setMatchItem] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form State
@@ -27,7 +27,6 @@ export default function Report() {
     if (initialType) setReportType(initialType);
   }, [initialType]);
 
-  // Handle Image Selection
   const handlePhotoSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -41,11 +40,9 @@ export default function Report() {
     setPhotoPreview(null);
   };
 
-  // Submit Handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Enforcement: Photo is mandatory for Found items
     if (reportType === 'found' && !photoFile) {
       alert("A photo is mandatory when reporting a found item. Please help the owner verify it!");
       return;
@@ -55,7 +52,6 @@ export default function Report() {
     let photoUrl = null;
 
     try {
-      // 1. Upload Photo (if exists)
       if (photoFile) {
         const fileExt = photoFile.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
@@ -73,7 +69,6 @@ export default function Report() {
         photoUrl = publicUrlData.publicUrl;
       }
 
-      // 2. Save Report Data to Database
       const { error: insertError } = await supabase
         .from('reports')
         .insert([{
@@ -87,11 +82,30 @@ export default function Report() {
         
       if (insertError) throw insertError;
       
-      // Success!
-      setIsSubmitted(true);
+      // Match Checking Logic for Lost Items
       if (reportType === 'lost') {
-          setIsMatch(true); // Simulate a Smart Match for the demo
+        const { data: foundItems } = await supabase
+          .from('reports')
+          .select('*')
+          .eq('type', 'found')
+          .eq('category', selectedCat); // Only compare within the same category to optimize
+
+        if (foundItems && foundItems.length > 0) {
+          // Extract keywords > 2 letters
+          const queryWords = `${title} ${description}`.toLowerCase().split(/\W+/).filter(w => w.length > 2);
+          
+          const bestMatch = foundItems.find(item => {
+            const itemText = `${item.title} ${item.description}`.toLowerCase();
+            return queryWords.some(word => itemText.includes(word));
+          });
+
+          if (bestMatch) {
+            setMatchItem(bestMatch);
+          }
+        }
       }
+
+      setIsSubmitted(true);
 
     } catch (error) {
       console.error("Full error object:", error);
@@ -140,19 +154,30 @@ export default function Report() {
   if (isSubmitted) {
     return (
        <div className="px-5 pt-20 pb-32 space-y-6 max-w-md mx-auto min-h-screen bg-background flex flex-col items-center justify-center text-center">
-          {isMatch ? (
-            <div className="bg-white p-8 rounded-[40px] shadow-lg shadow-primary/10 border border-primary/20 w-full transform transition-all">
+          {matchItem ? (
+            <div className="bg-white p-8 rounded-[40px] shadow-lg shadow-primary/10 border border-primary/20 w-full transform transition-all animate-in zoom-in-95">
                <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-5 text-primary">
                   <Sparkles className="w-10 h-10" />
                </div>
                <h2 className="text-2xl font-black text-gray-800 mb-2">Potential Match!</h2>
-               <p className="text-sm text-gray-500 mb-8 leading-relaxed">We found an item matching your description reported near the Library. (92% match)</p>
-               <button onClick={() => navigate('/item/1')} className="w-full h-14 rounded-full bg-primary text-white font-bold text-base shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+               <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+                 We found an item matching your keywords that was reported at <span className="font-bold text-gray-800">{matchItem.location}</span>.
+               </p>
+               
+               <div className="bg-gray-50 rounded-2xl p-4 mb-8 text-left border border-gray-100">
+                  <h4 className="font-bold text-sm text-gray-800 truncate">{matchItem.title}</h4>
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{matchItem.description || "No description provided."}</p>
+               </div>
+
+               <button onClick={() => navigate(`/item/${matchItem.id}`)} className="w-full h-14 rounded-full bg-primary text-white font-bold text-base shadow-lg shadow-primary/20 active:scale-95 transition-transform mb-3">
                  View Match
+               </button>
+               <button onClick={() => navigate('/')} className="w-full h-14 rounded-full bg-white text-gray-600 font-bold text-base active:bg-gray-50 transition-colors">
+                 Return Home
                </button>
             </div>
           ) : (
-            <div className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100 w-full transform transition-all">
+            <div className="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100 w-full transform transition-all animate-in zoom-in-95">
                <div className="w-20 h-20 bg-teal-50 rounded-full flex items-center justify-center mx-auto mb-5 text-secondary">
                   <CheckCircle2 className="w-10 h-10" />
                </div>
@@ -199,14 +224,12 @@ export default function Report() {
             </div>
           ) : (
             <div className="flex gap-3">
-               {/* Camera Input */}
                <input type="file" id="camera-upload" accept="image/*" capture="environment" className="hidden" onChange={handlePhotoSelect} />
                <label htmlFor="camera-upload" className="flex-1 h-24 bg-white border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors active:scale-[0.98] cursor-pointer">
                  <Camera className="w-6 h-6 mb-2 text-primary" />
                  <span className="text-xs font-semibold">Take Photo</span>
                </label>
 
-               {/* Gallery Input */}
                <input type="file" id="gallery-upload" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
                <label htmlFor="gallery-upload" className="flex-1 h-24 bg-white border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors active:scale-[0.98] cursor-pointer">
                  <ImageIcon className="w-6 h-6 mb-2 text-secondary" />

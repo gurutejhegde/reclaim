@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { ArrowLeft, MapPin, Clock, Tag, MoreVertical, Bookmark, Loader2 } from 'lucide-react'
+import { ArrowLeft, MapPin, Clock, Tag, Trash2, Bookmark, Loader2 } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
@@ -26,6 +26,21 @@ export default function ItemDetails() {
     fetchItem()
   }, [id])
 
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this report?")) {
+      const { error } = await supabase
+        .from('reports')
+        .delete()
+        .eq('id', id);
+        
+      if (!error) {
+        navigate('/');
+      } else {
+        alert("Failed to delete report.");
+      }
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">
@@ -47,7 +62,6 @@ export default function ItemDetails() {
     )
   }
 
-  // Format date correctly
   const reportDate = new Date(item.created_at);
   const isToday = new Date().toDateString() === reportDate.toDateString();
   const timeString = reportDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -66,8 +80,8 @@ export default function ItemDetails() {
           <button onClick={() => navigate('/')} className="w-10 h-10 bg-white/60 backdrop-blur-md rounded-full flex items-center justify-center text-gray-800 shadow-sm active:scale-95 transition-transform">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <button className="w-10 h-10 bg-white/60 backdrop-blur-md rounded-full flex items-center justify-center text-gray-800 shadow-sm active:scale-95 transition-transform">
-            <MoreVertical className="w-5 h-5" />
+          <button onClick={handleDelete} className="w-10 h-10 bg-white/60 backdrop-blur-md rounded-full flex items-center justify-center text-red-500 shadow-sm active:scale-95 transition-transform">
+            <Trash2 className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -110,9 +124,6 @@ export default function ItemDetails() {
 
       {/* Sticky Bottom Actions */}
       <div className="fixed bottom-0 left-0 right-0 p-5 bg-white border-t border-gray-100 flex gap-4 max-w-md mx-auto z-40 pb-safe">
-        <button className="w-14 h-14 rounded-2xl bg-secondary text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-secondary/30 active:scale-95 transition-transform">
-          <Bookmark className="w-6 h-6" fill="currentColor" />
-        </button>
         <button className="flex-1 h-14 rounded-3xl bg-primary text-white font-bold text-base shadow-lg shadow-primary/20 active:bg-primary-dark active:scale-[0.98] transition-all">
           {item.type === 'lost' ? 'I Found This' : 'Request Claim'}
         </button>
