@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, LogOut, Award, ShieldCheck } from 'lucide-react';
+import { User, LogOut, Award, ShieldCheck, MessageCircle, ChevronRight, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Profile() {
@@ -28,6 +28,17 @@ export default function Profile() {
       </header>
 
       <div className="space-y-4 relative z-10">
+        <div onClick={() => navigate('/my-reports')} className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center gap-4 cursor-pointer active:scale-95 transition-transform">
+          <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-500">
+            <FileText className="w-6 h-6" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-gray-800 text-sm">My Reports</h3>
+            <p className="text-xs text-gray-500 mt-1">Track items you've posted.</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-gray-300" />
+        </div>
+
         <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center gap-4">
           <div className="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-primary">
             <Award className="w-6 h-6" />

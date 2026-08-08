@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Search, SlidersHorizontal, MapPin, Camera, SearchIcon, Bell, Sparkles } from 'lucide-react'
+import { Search, SlidersHorizontal, MapPin, Camera, SearchIcon, Bell, Sparkles, Tag } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Loader from '../components/Loader'
@@ -15,6 +15,7 @@ const timeAgo = (dateStr) => {
 
 export default function Home() {
   const navigate = useNavigate()
+  const userName = localStorage.getItem('reclaim_user_name') || 'Student';
   
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
@@ -37,32 +38,41 @@ export default function Home() {
     fetchReports()
   }, [])
 
-  const filteredReports = reports.filter(r => {
-    // 1. Hide claimed items
-    if (r.status === 'claimed') return false;
-    
-    // 2. Filter by Category Button
-    if (activeCategory !== 'All' && r.category !== activeCategory) return false;
-    
-    // 3. Smart Search (Title, Location, Description, Category)
-    if (searchQuery.trim()) {
-      const queryWords = searchQuery.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+  const filteredReports = reports
+    .filter(r => {
+      // 1. Hide ONLY claimed items (Contacted items stay but move to bottom)
+      if (r.status === 'claimed') return false;
       
-      // Combine all text fields into one searchable string
-      const combinedText = `
-        ${r.title || ''} 
-        ${r.location || ''} 
-        ${r.description || ''} 
-        ${r.category || ''}
-      `.toLowerCase();
+      // 2. Filter by Category Button
+      if (activeCategory !== 'All' && r.category !== activeCategory) return false;
+
+      // 3. Filter by Search Query
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return r.title.toLowerCase().includes(q) || 
+               r.location.toLowerCase().includes(q) || 
+               (r.description && r.description.toLowerCase().includes(q));
+      }
       
-      // Check if EVERY word typed by the user exists somewhere in the item's details
-      const isMatch = queryWords.every(q => combinedText.includes(q));
-      
-      if (!isMatch) return false;
-    }
+      return true;
+    })
+    .sort((a, b) => {
+      // Push pending or more_info_needed items to the bottom
+      const aIsContacted = (a.status === 'pending' || a.status === 'more_info_needed');
+      const bIsContacted = (b.status === 'pending' || b.status === 'more_info_needed');
+      if (aIsContacted && !bIsContacted) return 1;
+      if (!aIsContacted && bIsContacted) return -1;
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
+
+  const hasNotifications = reports.some(item => {
+    let claimData = { requester: '' };
+    try { if (item.claimed_by) claimData = JSON.parse(item.claimed_by); } catch(e){}
+    const name = localStorage.getItem('reclaim_user_name');
     
-    return true;
+    if (item.status === 'pending' && item.reported_by === name) return true;
+    if (item.status === 'more_info_needed' && claimData.requester === name) return true;
+    return false;
   });
 
   return (
@@ -70,13 +80,13 @@ export default function Home() {
       {/* Header */}
       <header className="flex justify-between items-center">
         <div>
-          <p className="text-xs text-gray-500 font-medium">AITM Campus</p>
-          <h1 className="text-2xl font-black text-gray-800 tracking-tight">Reclaim</h1>
+          <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Welcome back,</p>
+          <h1 className="text-2xl font-black text-gray-800 tracking-tight">{userName}</h1>
         </div>
-        <div className="relative p-2 bg-white rounded-full shadow-sm border border-gray-100">
-          <Bell className="w-5 h-5 text-gray-600" />
-          <div className="w-2.5 h-2.5 bg-primary rounded-full absolute top-0 right-0 border-2 border-white"></div>
-        </div>
+        <button onClick={() => navigate('/notifications')} className="relative w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-800 shadow-sm active:scale-95 transition-transform">
+          <Bell className="w-5 h-5" />
+          {hasNotifications && <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>}
+        </button>
       </header>
 
       {/* Search & Filters */}
@@ -122,14 +132,17 @@ export default function Home() {
         )}
       </div>
 
-      {/* Smart Match Alert */}
-      <div className="bg-white border-l-4 border-primary rounded-2xl p-4 shadow-sm flex items-start gap-3 cursor-pointer">
-        <div className="bg-orange-50 p-2 rounded-full text-primary">
-          <Sparkles className="w-5 h-5" />
+      {/* Header Banner */}
+      <div className="bg-white border-l-4 border-primary rounded-2xl p-5 shadow-sm relative overflow-hidden mt-2 flex items-start gap-3">
+        <div className="absolute top-[-50%] right-[-10%] w-32 h-32 bg-primary/10 rounded-full mix-blend-multiply filter blur-xl"></div>
+        <div className="mt-1">
+           <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-sm shadow-primary/40"></div>
         </div>
-        <div>
-          <h4 className="font-bold text-gray-800 text-sm">Potential Match Found</h4>
-          <p className="text-xs text-gray-500 mt-1">A black backpack was reported found at the Library 10 mins ago.</p>
+        <div className="relative z-10">
+          <h2 className="font-bold text-gray-800 text-sm tracking-wide uppercase mb-1">Reclaim Network</h2>
+          <p className="text-gray-500 font-medium text-xs leading-relaxed">
+            Turn scattered reporting into a searchable, trackable recovery system. Never let a lost item become a forgotten one.
+          </p>
         </div>
       </div>
 
@@ -164,22 +177,43 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4">
-            {filteredReports.map((report) => (
-              <div 
-                key={report.id} 
-                onClick={() => navigate(`/item/${report.id}`)} 
-                className="bg-white rounded-3xl p-2 shadow-sm border border-gray-100 active:scale-95 transition-transform cursor-pointer"
-              >
-                <div className="relative aspect-square rounded-2xl overflow-hidden mb-2 bg-gray-50 border border-gray-50">
-                  <img 
-                    src={report.photo_url || "https://images.unsplash.com/photo-1584824486509-112e4181ff6b?auto=format&fit=crop&w=500&q=80"} 
-                    alt={report.title} 
-                    className="w-full h-full object-cover" 
-                  />
-                  <div className={`absolute top-2 left-2 text-[9px] font-bold px-2 py-1 rounded-full ${report.type === 'lost' ? 'bg-lost-bg text-lost-text' : 'bg-found-bg text-found-text'}`}>
-                    {report.type === 'lost' ? 'Lost' : 'Found'}
+            {filteredReports.map((report) => {
+              const isContacted = report.status === 'pending' || report.status === 'more_info_needed';
+              
+              return (
+                <div 
+                  key={report.id} 
+                  onClick={() => navigate(`/item/${report.id}`)} 
+                  className={`bg-white rounded-3xl p-2 shadow-sm border border-gray-100 active:scale-95 transition-transform cursor-pointer ${isContacted ? 'opacity-60 grayscale' : ''}`}
+                >
+                  <div className="w-full h-[180px] bg-gray-50 flex items-center justify-center flex-shrink-0 relative overflow-hidden rounded-2xl mb-2">
+                    {report.photo_url ? (
+                      <img 
+                        src={report.photo_url} 
+                        alt={report.title} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center text-gray-300">
+                        <Tag className="w-10 h-10 mb-1 opacity-50" />
+                        <span className="text-[10px] font-bold">No Image</span>
+                      </div>
+                    )}
+                    {/* Status Badge / Overlay */}
+                    {isContacted ? (
+                      <div className="absolute inset-0 bg-gray-900/30 backdrop-blur-[2px] flex items-center justify-center z-10 rounded-2xl">
+                         <div className="bg-white/95 backdrop-blur-xl px-4 py-2 rounded-2xl shadow-2xl flex items-center gap-2 transform -rotate-3 scale-105 border border-white/50">
+                           <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                           <span className="text-gray-900 font-black text-xs uppercase tracking-widest">Contacted</span>
+                         </div>
+                      </div>
+                    ) : (
+                      <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-[9px] font-bold backdrop-blur-md shadow-sm flex items-center gap-1.5 ${report.type === 'lost' ? 'bg-lost-bg/95 text-lost-text' : 'bg-found-bg/95 text-found-text'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${report.type === 'lost' ? 'bg-lost-text' : 'bg-found-text'}`}></div>
+                        {report.type === 'lost' ? 'Open Lost' : 'Open Found'}
+                      </div>
+                    )}
                   </div>
-                </div>
                 <div className="px-1.5 pb-1">
                   <h3 className="font-bold text-gray-800 text-xs truncate">{report.title}</h3>
                   <p className="text-[10px] text-gray-400 mt-0.5">{report.category} • {timeAgo(report.created_at)}</p>
@@ -189,7 +223,8 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

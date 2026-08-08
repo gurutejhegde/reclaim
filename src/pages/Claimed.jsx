@@ -11,15 +11,26 @@ export default function Claimed() {
 
   useEffect(() => {
     const fetchClaimed = async () => {
-      // In Supabase, if the status column doesn't exist yet, this query will fail gracefully and we handle it
       const { data, error } = await supabase
         .from('reports')
         .select('*')
-        .eq('status', 'claimed')
         .order('created_at', { ascending: false });
 
-      if (!error && data) {
-        setClaimedItems(data);
+      if (data) {
+        const localClaims = JSON.parse(localStorage.getItem('local_claims') || '[]');
+        
+        const allClaimed = data.filter(item => 
+          item.status === 'claimed' || localClaims.some(c => c.id === item.id)
+        ).map(item => {
+          // Sync the local username if it was claimed locally
+          const localMatch = localClaims.find(c => c.id === item.id);
+          if (localMatch) {
+            item.claimed_by = localMatch.claimed_by;
+          }
+          return item;
+        });
+
+        setClaimedItems(allClaimed);
       }
       setLoading(false);
     };

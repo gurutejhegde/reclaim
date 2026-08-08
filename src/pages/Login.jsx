@@ -9,7 +9,7 @@ export default function Login() {
   const handleLogin = (e) => {
     e.preventDefault();
     if (name.trim()) {
-      localStorage.setItem('reclaim_user_name', name.trim());
+      localStorage.setItem('reclaim_user_name', name.trim().toLowerCase());
       navigate('/');
     }
   };

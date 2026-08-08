@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Home, MessageSquare, Plus, CheckCircle, User } from 'lucide-react'
+import { Home, Bell, Plus, CheckCircle, User } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 export default function BottomNav() {
@@ -40,8 +40,8 @@ export default function BottomNav() {
           <Home className="w-[22px] h-[22px]" strokeWidth={location.pathname === '/' ? 2.5 : 2} />
         </button>
         
-        <button onClick={() => navigate('/messages')} className={`p-2 transition-colors ${location.pathname === '/messages' ? 'text-primary' : 'text-gray-400 hover:text-gray-800'}`}>
-          <MessageSquare className="w-[22px] h-[22px]" strokeWidth={location.pathname === '/messages' ? 2.5 : 2} />
+        <button onClick={() => navigate('/notifications')} className={`p-2 transition-colors ${location.pathname === '/notifications' ? 'text-primary' : 'text-gray-400 hover:text-gray-800'}`}>
+          <Bell className="w-[22px] h-[22px]" strokeWidth={location.pathname === '/notifications' ? 2.5 : 2} />
         </button>
 
         <div className="relative -top-6">

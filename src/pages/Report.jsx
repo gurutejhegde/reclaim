@@ -69,6 +69,7 @@ export default function Report() {
         photoUrl = publicUrlData.publicUrl;
       }
 
+      const userName = localStorage.getItem('reclaim_user_name') || 'Anonymous';
       const { error: insertError } = await supabase
         .from('reports')
         .insert([{
@@ -77,7 +78,8 @@ export default function Report() {
           category: selectedCat,
           location: locationInput,
           description: description,
-          photo_url: photoUrl
+          photo_url: photoUrl,
+          reported_by: userName
         }]);
         
       if (insertError) throw insertError;
@@ -170,10 +172,10 @@ export default function Report() {
                </div>
 
                <button onClick={() => navigate(`/item/${matchItem.id}`)} className="w-full h-14 rounded-full bg-primary text-white font-bold text-base shadow-lg shadow-primary/20 active:scale-95 transition-transform mb-3">
-                 View Match
+                 Yes, Claim This
                </button>
-               <button onClick={() => navigate('/')} className="w-full h-14 rounded-full bg-white text-gray-600 font-bold text-base active:bg-gray-50 transition-colors">
-                 Return Home
+               <button onClick={() => navigate('/')} className="w-full h-14 rounded-full bg-white text-gray-600 font-bold text-base active:bg-gray-50 transition-colors border border-gray-200">
+                 No, Not Mine
                </button>
             </div>
           ) : (
