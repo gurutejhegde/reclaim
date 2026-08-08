@@ -6,34 +6,57 @@ export default function BottomNav() {
   const location = useLocation()
   const navigate = useNavigate()
   const [isVisible, setIsVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
-
-  const isHiddenPage = location.pathname.startsWith('/report') || location.pathname.startsWith('/item') || location.pathname === '/login'
-
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = document.getElementById('main-scroll-container')?.scrollTop || 0
-      
-      if (currentScrollY > lastScrollY && currentScrollY > 50) {
-        setIsVisible(false) 
-      } else {
-        setIsVisible(true)  
+    let lastScrollY = 0;
+    let ticking = false;
+
+    const handleScroll = (e) => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const target = e.target === document ? window : e.target;
+          const currentScrollY = target.scrollY ?? target.scrollTop ?? 0;
+          
+          if (currentScrollY > lastScrollY && currentScrollY > 20) {
+            setIsVisible(false);
+          } else if (currentScrollY < lastScrollY || currentScrollY <= 20) {
+            setIsVisible(true);
+          }
+          
+          lastScrollY = currentScrollY;
+          ticking = false;
+        });
+        ticking = true;
       }
-      setLastScrollY(currentScrollY)
-    }
+    };
 
-    const scrollContainer = document.getElementById('main-scroll-container')
+    // Listen on window
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Listen on the main container
+    const scrollContainer = document.getElementById('main-scroll-container');
     if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleScroll, { passive: true })
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
     }
 
-    return () => scrollContainer?.removeEventListener('scroll', handleScroll)
-  }, [lastScrollY])
+    // Fallback interval to attach if container wasn't ready
+    const timer = setTimeout(() => {
+      const lateContainer = document.getElementById('main-scroll-container');
+      if (lateContainer) lateContainer.addEventListener('scroll', handleScroll, { passive: true });
+    }, 500);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollContainer) scrollContainer.removeEventListener('scroll', handleScroll);
+      clearTimeout(timer);
+    };
+  }, [location.pathname]);
+
+  const isHiddenPage = location.pathname.startsWith('/report') || location.pathname.startsWith('/item') || location.pathname === '/login';
 
   if (isHiddenPage) return null;
 
   return (
-    <div className={`fixed bottom-0 left-0 right-0 max-w-md mx-auto transition-transform duration-300 z-50 ${isVisible ? 'translate-y-0' : 'translate-y-[150%]'}`}>
+    <div className={`fixed bottom-0 left-0 right-0 max-w-md mx-auto transition-all duration-300 z-50 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0 pointer-events-none'}`}>
       <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-xl rounded-full px-8 py-2.5 flex justify-between items-center shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100">
         
         <button onClick={() => navigate('/')} className={`p-2 transition-colors ${location.pathname === '/' ? 'text-primary' : 'text-gray-400 hover:text-gray-800'}`}>

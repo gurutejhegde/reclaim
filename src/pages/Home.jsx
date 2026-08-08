@@ -222,7 +222,7 @@ export default function Home() {
                     ) : (
                       <div className={`absolute top-3 left-3 px-2 py-1 rounded-full text-[9px] font-bold backdrop-blur-md shadow-sm flex items-center gap-1.5 ${report.type === 'lost' ? 'bg-lost-bg/95 text-lost-text' : 'bg-found-bg/95 text-found-text'}`}>
                         <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${report.type === 'lost' ? 'bg-lost-text' : 'bg-found-text'}`}></div>
-                        {report.type === 'lost' ? 'Open Lost' : 'Open Found'}
+                        {report.type === 'lost' ? 'Lost · Open' : 'Found · Open'}
                       </div>
                     )}
                   </div>

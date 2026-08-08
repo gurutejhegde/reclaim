@@ -12,10 +12,16 @@ envContent.split('\n').forEach(line => {
 const supabase = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY);
 
 const items = [
+  { file: 'airpods.png', title: 'Airpods Pro', category: 'Electronics', location: 'Cafeteria', description: 'White airpods pro in a standard case.', type: 'lost', contentType: 'image/png', reported_by: 'gurutej' },
   { file: 'black-backpack.png', title: 'Black Nike Backpack', category: 'Bags', location: 'Library, 2nd Floor', description: 'Has my textbooks inside.', type: 'lost', contentType: 'image/png', reported_by: 'gurutej' },
-  { file: 'water-bottle.png', title: 'Blue Hydroflask', category: 'Other', location: 'Gym', description: 'Blue water bottle with some stickers.', type: 'lost', contentType: 'image/png', reported_by: 'Alex' },
-  { file: 'charger.png', title: 'MacBook Charger', category: 'Electronics', location: 'Library, 1st Floor', description: 'White apple charger.', type: 'found', contentType: 'image/png', reported_by: 'Sarah' },
-  { file: 'airpods.png', title: 'Airpods Pro', category: 'Electronics', location: 'Cafeteria', description: 'White airpods pro in a standard case.', type: 'lost', contentType: 'image/png', reported_by: 'David' }
+  { file: 'cat-keychain.png', title: 'Cat Keychain', category: 'Keys', location: 'Engineering Block', description: 'Cute cat keychain attached to house keys.', type: 'found', contentType: 'image/png', reported_by: 'sarah' },
+  { file: 'charger.png', title: 'MacBook Charger', category: 'Electronics', location: 'Library, 1st Floor', description: 'White apple charger.', type: 'found', contentType: 'image/png', reported_by: 'alex' },
+  { file: 'headphones.png', title: 'Sony Headphones', category: 'Electronics', location: 'Student Center', description: 'Black Sony WH-1000XM4 headphones.', type: 'lost', contentType: 'image/png', reported_by: 'gurutej' },
+  { file: 'pen.jpg', title: 'Expensive Fountain Pen', category: 'Other', location: 'Lecture Hall 3', description: 'Gold accented fountain pen.', type: 'found', contentType: 'image/jpeg', reported_by: 'alex' },
+  { file: 'red-notebook.png', title: 'Red Notebook', category: 'Other', location: 'Cafe', description: 'Red moleskine notebook with lecture notes.', type: 'lost', contentType: 'image/png', reported_by: 'gurutej' },
+  { file: 'samsung-phone.png', title: 'Samsung Galaxy Phone', category: 'Electronics', location: 'Sports Ground', description: 'Black phone with a clear case.', type: 'found', contentType: 'image/png', reported_by: 'sarah' },
+  { file: 'wallet.png', title: 'Brown Leather Wallet', category: 'Wallets', location: 'Hostel A', description: 'Brown leather wallet with some cash and ID.', type: 'lost', contentType: 'image/png', reported_by: 'gurutej' },
+  { file: 'water-bottle.png', title: 'Blue Hydroflask', category: 'Other', location: 'Gym', description: 'Blue water bottle with some stickers.', type: 'lost', contentType: 'image/png', reported_by: 'gurutej' }
 ];
 
 async function seed() {

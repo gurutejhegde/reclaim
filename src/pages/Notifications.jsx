@@ -68,7 +68,7 @@ export default function Notifications() {
     if (!meetupText.trim() || !meetupName.trim()) return;
     const req = meetupModal;
     
-    const combinedMeetup = `Contact Name: ${meetupName}\n\nMeetup Instructions:\n${meetupText}`;
+    const combinedMeetup = `Finder: ${meetupName}\n\nMeetup Instructions:\n${meetupText}`;
     const updatedClaimData = JSON.stringify({ ...req.claimData, meetup: combinedMeetup });
     
     await supabase.from('reports').update({ status: 'claimed', claimed_by: updatedClaimData }).eq('id', req.id);
@@ -134,7 +134,7 @@ export default function Notifications() {
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-800 text-sm">
-                      {isPending ? 'Claim Request' : isMeetup ? 'Meetup Arranged' : 'More Info Requested'}
+                      {isPending ? 'Claim Request' : isMeetup ? 'Return Arranged' : 'More Info Requested'}
                     </h3>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{req.title}</p>
                   </div>
@@ -179,7 +179,7 @@ export default function Notifications() {
                   </>
                 ) : isMeetup ? (
                   <>
-                    <p className="text-sm text-gray-700 mb-3">Good news! The finder has verified your claim and provided instructions on how to get it back.</p>
+                    <p className="text-sm text-gray-700 mb-3">Your ownership was verified. The finder has provided instructions for returning your item.</p>
                     <div className="bg-green-50 p-4 rounded-xl border border-green-100 mb-2 relative z-10 shadow-inner whitespace-pre-wrap">
                       <p className="text-sm text-green-800 font-medium">{req.claimData.meetup}</p>
                     </div>

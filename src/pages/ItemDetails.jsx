@@ -86,7 +86,7 @@ export default function ItemDetails() {
   const reportDate = new Date(item.created_at);
   const isToday = new Date().toDateString() === reportDate.toDateString();
   const timeString = reportDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const dateString = isToday ? `Today, ${timeString}` : `${reportDate.toLocaleDateString()}, ${timeString}`;
+  const dateString = isToday ? `Today · ${timeString}` : `${reportDate.toLocaleDateString()} · ${timeString}`;
 
   const handleActionClick = () => {
     setShowClaimModal(true);
@@ -146,7 +146,7 @@ export default function ItemDetails() {
             <h1 className="text-2xl font-black text-gray-800 pr-4">{item.title}</h1>
             <div className={`text-[10px] font-bold px-3 py-1.5 rounded-full flex-shrink-0 flex items-center gap-1.5 ${item.type === 'lost' ? 'bg-lost-bg text-lost-text' : 'bg-found-bg text-found-text'}`}>
               <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${item.type === 'lost' ? 'bg-lost-text' : 'bg-found-text'}`}></div>
-              {item.type === 'lost' ? 'Open Lost' : 'Open Found'}
+              {item.type === 'lost' ? 'Lost · Open' : 'Found · Open'}
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 mt-1">
@@ -233,7 +233,7 @@ export default function ItemDetails() {
 
         {item.description && (
           <div>
-            <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Description</h3>
+            <h3 className="text-base font-bold text-gray-800 mb-2">Description</h3>
             <p className="text-gray-600 text-sm leading-relaxed bg-white p-4 rounded-3xl shadow-sm border border-gray-50">
               {item.description}
             </p>
