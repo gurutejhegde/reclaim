@@ -12,6 +12,7 @@ export default function Notifications() {
   const [toastMessage, setToastMessage] = useState('');
   const [meetupModal, setMeetupModal] = useState(null);
   const [meetupText, setMeetupText] = useState('');
+  const [meetupName, setMeetupName] = useState('');
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -24,7 +25,8 @@ export default function Notifications() {
       const { data, error } = await supabase
         .from('reports')
         .select('*')
-        .in('status', ['pending', 'more_info_needed']);
+        .in('status', ['pending', 'more_info_needed', 'claimed'])
+        .order('created_at', { ascending: false });
 
       if (data) {
         const relevantNotifs = data.filter(item => {
@@ -35,6 +37,8 @@ export default function Notifications() {
           if (item.status === 'pending' && item.reported_by === userName) return true;
           // Claimer sees requests for more info
           if (item.status === 'more_info_needed' && claimData.requester === userName) return true;
+          // Claimer sees meetup instructions
+          if (item.status === 'claimed' && claimData.requester === userName && claimData.meetup) return true;
           
           return false;
         }).map(item => {
@@ -57,13 +61,15 @@ export default function Notifications() {
   const handleApproveClick = (req) => {
     setMeetupModal(req);
     setMeetupText('');
+    setMeetupName('');
   };
 
   const confirmApprove = async () => {
-    if (!meetupText.trim()) return;
+    if (!meetupText.trim() || !meetupName.trim()) return;
     const req = meetupModal;
     
-    const updatedClaimData = JSON.stringify({ ...req.claimData, meetup: meetupText });
+    const combinedMeetup = `Contact Name: ${meetupName}\n\nMeetup Instructions:\n${meetupText}`;
+    const updatedClaimData = JSON.stringify({ ...req.claimData, meetup: combinedMeetup });
     
     await supabase.from('reports').update({ status: 'claimed', claimed_by: updatedClaimData }).eq('id', req.id);
     showToast("Approved! Meetup instructions sent.");
@@ -116,23 +122,25 @@ export default function Notifications() {
           )}
           
           {notifs.map(req => {
-            const isFinder = req.status === 'pending';
+            const isPending = req.status === 'pending';
+            const isMoreInfo = req.status === 'more_info_needed';
+            const isMeetup = req.status === 'claimed';
             
             return (
               <div key={req.id} className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100 relative overflow-hidden">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isFinder ? 'bg-orange-50 text-primary' : 'bg-red-50 text-red-500'}`}>
-                    {isFinder ? <ShieldCheck className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isPending ? 'bg-orange-50 text-primary' : isMeetup ? 'bg-green-50 text-green-500' : 'bg-red-50 text-red-500'}`}>
+                    {isPending ? <ShieldCheck className="w-5 h-5" /> : isMeetup ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-800 text-sm">
-                      {isFinder ? 'Claim Request' : 'More Info Requested'}
+                      {isPending ? 'Claim Request' : isMeetup ? 'Meetup Arranged' : 'More Info Requested'}
                     </h3>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{req.title}</p>
                   </div>
                 </div>
                 
-                {isFinder ? (
+                {isPending ? (
                   <>
                     <p className="text-sm text-gray-700 mb-2"><strong>{req.claimData.requester}</strong> has submitted proof of ownership:</p>
                     <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-5 relative z-10 shadow-inner whitespace-pre-wrap">
@@ -148,7 +156,7 @@ export default function Notifications() {
                        </button>
                     </div>
                   </>
-                ) : (
+                ) : isMoreInfo ? (
                   <>
                     <p className="text-sm text-gray-700 mb-3">The finder of <strong>{req.title}</strong> has requested one more specific detail from you to verify ownership.</p>
                     
@@ -169,7 +177,17 @@ export default function Notifications() {
                       </button>
                     </div>
                   </>
-                )}
+                ) : isMeetup ? (
+                  <>
+                    <p className="text-sm text-gray-700 mb-3">Good news! The finder has verified your claim and provided instructions on how to get it back.</p>
+                    <div className="bg-green-50 p-4 rounded-xl border border-green-100 mb-2 relative z-10 shadow-inner whitespace-pre-wrap">
+                      <p className="text-sm text-green-800 font-medium">{req.claimData.meetup}</p>
+                    </div>
+                    <button onClick={() => navigate(`/item/${req.id}`)} className="w-full mt-2 py-3 font-bold text-xs rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5 active:scale-95">
+                      View Original Post
+                    </button>
+                  </>
+                ) : null}
               </div>
             );
           })}
@@ -181,13 +199,21 @@ export default function Notifications() {
         <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-5 animate-in fade-in">
           <div className="bg-white rounded-[32px] p-6 w-full max-w-sm shadow-xl animate-in zoom-in-95">
             <h3 className="text-xl font-black text-gray-800 mb-2">Final Step: Meetup</h3>
-            <p className="text-sm text-gray-500 mb-5 leading-relaxed">Where and when should {meetupModal.claimData.requester} meet you to complete the exchange?</p>
+            <p className="text-sm text-gray-500 mb-5 leading-relaxed">How should {meetupModal.claimData.requester} find you?</p>
+            
+            <input 
+              type="text"
+              value={meetupName}
+              onChange={(e) => setMeetupName(e.target.value)}
+              placeholder="Your Name or Phone Number"
+              className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 mb-3"
+            />
             
             <textarea 
               value={meetupText}
               onChange={(e) => setMeetupText(e.target.value)}
               placeholder="e.g., Let's meet at the campus cafeteria tomorrow at 1:00 PM."
-              className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[100px] resize-none mb-6"
+              className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[90px] resize-none mb-6"
             />
             
             <div className="flex gap-3">
@@ -199,7 +225,7 @@ export default function Notifications() {
               </button>
               <button 
                 onClick={confirmApprove}
-                disabled={!meetupText.trim()}
+                disabled={!meetupText.trim() || !meetupName.trim()}
                 className="flex-1 bg-primary text-white font-bold py-3.5 rounded-full shadow-lg shadow-primary/20 active:bg-primary-dark transition-colors flex justify-center items-center disabled:opacity-50 disabled:bg-gray-300"
               >
                 Approve & Return
