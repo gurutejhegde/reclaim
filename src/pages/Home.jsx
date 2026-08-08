@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Search, SlidersHorizontal, MapPin, Camera, SearchIcon, Bell, Sparkles, Loader2 } from 'lucide-react'
+import { Search, SlidersHorizontal, MapPin, Camera, SearchIcon, Bell, Sparkles } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import Loader from '../components/Loader'
 
 const timeAgo = (dateStr) => {
   const diff = new Date() - new Date(dateStr);
@@ -19,6 +20,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('All')
   const [showFilters, setShowFilters] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -35,9 +37,33 @@ export default function Home() {
     fetchReports()
   }, [])
 
-  const filteredReports = activeCategory === 'All' 
-    ? reports 
-    : reports.filter(r => r.category === activeCategory);
+  const filteredReports = reports.filter(r => {
+    // 1. Hide claimed items
+    if (r.status === 'claimed') return false;
+    
+    // 2. Filter by Category Button
+    if (activeCategory !== 'All' && r.category !== activeCategory) return false;
+    
+    // 3. Smart Search (Title, Location, Description, Category)
+    if (searchQuery.trim()) {
+      const queryWords = searchQuery.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+      
+      // Combine all text fields into one searchable string
+      const combinedText = `
+        ${r.title || ''} 
+        ${r.location || ''} 
+        ${r.description || ''} 
+        ${r.category || ''}
+      `.toLowerCase();
+      
+      // Check if EVERY word typed by the user exists somewhere in the item's details
+      const isMatch = queryWords.every(q => combinedText.includes(q));
+      
+      if (!isMatch) return false;
+    }
+    
+    return true;
+  });
 
   return (
     <div className="px-5 pt-12 pb-32 space-y-8 max-w-md mx-auto relative">
@@ -59,6 +85,8 @@ export default function Home() {
           <Search className="absolute left-4 w-5 h-5 text-gray-400" />
           <input 
             type="text" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search items, locations..." 
             className="w-full bg-white shadow-sm border border-gray-100 rounded-full py-4 pl-12 pr-14 text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
@@ -129,10 +157,7 @@ export default function Home() {
         </div>
         
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-10 text-gray-400">
-            <Loader2 className="w-8 h-8 animate-spin mb-2" />
-            <p className="text-sm font-medium">Loading reports...</p>
-          </div>
+          <Loader message="Loading reports..." />
         ) : filteredReports.length === 0 ? (
           <div className="bg-white rounded-3xl p-8 text-center border border-gray-100 shadow-sm">
             <p className="text-gray-500 text-sm font-medium">No items found for this category.</p>
