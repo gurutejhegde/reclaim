@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Home, Bell, Plus, CheckCircle, User } from 'lucide-react'
+import { Home, Plus, CheckCircle } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 export default function BottomNav() {
@@ -34,28 +34,20 @@ export default function BottomNav() {
 
   return (
     <div className={`fixed bottom-0 left-0 right-0 max-w-md mx-auto transition-transform duration-300 z-50 ${isVisible ? 'translate-y-0' : 'translate-y-[150%]'}`}>
-      <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-xl rounded-full px-6 py-3 flex justify-between items-center shadow-xl shadow-gray-200/50 border border-gray-100">
+      <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-xl rounded-full px-8 py-2.5 flex justify-between items-center shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-100">
         
         <button onClick={() => navigate('/')} className={`p-2 transition-colors ${location.pathname === '/' ? 'text-primary' : 'text-gray-400 hover:text-gray-800'}`}>
-          <Home className="w-[22px] h-[22px]" strokeWidth={location.pathname === '/' ? 2.5 : 2} />
-        </button>
-        
-        <button onClick={() => navigate('/notifications')} className={`p-2 transition-colors ${location.pathname === '/notifications' ? 'text-primary' : 'text-gray-400 hover:text-gray-800'}`}>
-          <Bell className="w-[22px] h-[22px]" strokeWidth={location.pathname === '/notifications' ? 2.5 : 2} />
+          <Home className="w-6 h-6" strokeWidth={location.pathname === '/' ? 2.5 : 2} />
         </button>
 
-        <div className="relative -top-6">
-          <button onClick={() => navigate('/report')} className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white shadow-lg shadow-primary/30 active:scale-95 transition-transform border-[3px] border-background">
-            <Plus className="w-6 h-6" strokeWidth={2.5} />
+        <div className="relative -top-5">
+          <button onClick={() => navigate('/report')} className="w-14 h-14 bg-primary rounded-full flex items-center justify-center text-white shadow-lg shadow-primary/30 active:scale-95 transition-transform border-[4px] border-background">
+            <Plus className="w-7 h-7" strokeWidth={3} />
           </button>
         </div>
 
         <button onClick={() => navigate('/claimed')} className={`p-2 transition-colors ${location.pathname === '/claimed' ? 'text-primary' : 'text-gray-400 hover:text-gray-800'}`}>
-          <CheckCircle className="w-[22px] h-[22px]" strokeWidth={location.pathname === '/claimed' ? 2.5 : 2} />
-        </button>
-
-        <button onClick={() => navigate('/profile')} className={`p-2 transition-colors ${location.pathname === '/profile' ? 'text-primary' : 'text-gray-400 hover:text-gray-800'}`}>
-          <User className="w-[22px] h-[22px]" strokeWidth={location.pathname === '/profile' ? 2.5 : 2} />
+          <CheckCircle className="w-6 h-6" strokeWidth={location.pathname === '/claimed' ? 2.5 : 2} />
         </button>
 
       </div>

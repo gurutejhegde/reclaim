@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Search, SlidersHorizontal, MapPin, Camera, SearchIcon, Bell, Sparkles, Tag } from 'lucide-react'
+import { Search, SlidersHorizontal, MapPin, Camera, SearchIcon, Bell, Sparkles, Tag, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Loader from '../components/Loader'
@@ -76,17 +76,22 @@ export default function Home() {
   });
 
   return (
-    <div className="px-5 pt-12 pb-32 space-y-8 max-w-md mx-auto relative">
+    <div className="px-5 pt-6 pb-32 space-y-6 max-w-md mx-auto relative">
       {/* Header */}
       <header className="flex justify-between items-center">
         <div>
-          <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Welcome back,</p>
-          <h1 className="text-2xl font-black text-gray-800 tracking-tight">{userName}</h1>
+          <h1 className="text-2xl font-black text-gray-800 tracking-tight">Reclaim</h1>
+          <p className="text-sm text-gray-500 font-medium mt-1">Welcome back, {userName.charAt(0).toUpperCase() + userName.slice(1)}</p>
         </div>
-        <button onClick={() => navigate('/notifications')} className="relative w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-800 shadow-sm active:scale-95 transition-transform">
-          <Bell className="w-5 h-5" />
-          {hasNotifications && <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>}
-        </button>
+        <div className="flex gap-3">
+          <button onClick={() => navigate('/notifications')} className="relative w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-800 shadow-sm active:scale-95 transition-transform border border-gray-100">
+            <Bell className="w-5 h-5" />
+            {hasNotifications && <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>}
+          </button>
+          <button onClick={() => navigate('/profile')} className="relative w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-800 shadow-sm active:scale-95 transition-transform border border-gray-100">
+            <User className="w-5 h-5" />
+          </button>
+        </div>
       </header>
 
       {/* Search & Filters */}
@@ -97,7 +102,7 @@ export default function Home() {
             type="text" 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search items, locations..." 
+            placeholder="Search lost & found reports..." 
             className="w-full bg-white shadow-sm border border-gray-100 rounded-full py-4 pl-12 pr-14 text-sm font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
           <div 
@@ -139,24 +144,24 @@ export default function Home() {
            <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-sm shadow-primary/40"></div>
         </div>
         <div className="relative z-10">
-          <h2 className="font-bold text-gray-800 text-sm tracking-wide uppercase mb-1">Reclaim Network</h2>
+          <h2 className="font-bold text-gray-800 text-sm tracking-wide uppercase mb-1">Lost something?</h2>
           <p className="text-gray-500 font-medium text-xs leading-relaxed">
-            Turn scattered reporting into a searchable, trackable recovery system. Never let a lost item become a forgotten one.
+            Someone may have already found it. Search recent reports or post a report of your own.
           </p>
         </div>
       </div>
 
       {/* Core Action Buttons */}
       <div className="grid grid-cols-2 gap-4">
-        <div onClick={() => navigate('/report?type=lost')} className="bg-white border-2 border-gray-100 rounded-[24px] p-5 shadow-sm active:scale-95 transition-transform cursor-pointer flex flex-col items-center text-center">
-          <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mb-3">
-            <SearchIcon className="w-6 h-6 text-gray-600" />
+        <div onClick={() => navigate('/report?type=lost')} className="bg-gray-50/50 border-2 border-dashed border-gray-200 rounded-[24px] p-5 active:scale-95 transition-transform cursor-pointer flex flex-col items-center text-center">
+          <div className="w-12 h-12 bg-gray-200/50 rounded-full flex items-center justify-center mb-3">
+            <SearchIcon className="w-5 h-5 text-gray-500" />
           </div>
-          <h3 className="font-bold text-gray-800 text-sm">Report Lost</h3>
+          <h3 className="font-bold text-gray-700 text-sm">Report Lost</h3>
         </div>
         <div onClick={() => navigate('/report?type=found')} className="bg-primary rounded-[24px] p-5 shadow-lg shadow-primary/20 active:scale-95 transition-transform cursor-pointer flex flex-col items-center text-center">
-          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-3">
-            <Camera className="w-6 h-6 text-white" />
+          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-3">
+            <Camera className="w-5 h-5 text-white" />
           </div>
           <h3 className="font-bold text-white text-sm">Report Found</h3>
         </div>
@@ -173,7 +178,14 @@ export default function Home() {
           <Loader message="Loading reports..." />
         ) : filteredReports.length === 0 ? (
           <div className="bg-white rounded-3xl p-8 text-center border border-gray-100 shadow-sm">
-            <p className="text-gray-500 text-sm font-medium">No items found for this category.</p>
+            {activeCategory === 'All' ? (
+              <>
+                <p className="text-gray-600 text-sm font-bold mb-1">No recent reports yet</p>
+                <p className="text-gray-400 text-xs">Be the first to report a lost or found item.</p>
+              </>
+            ) : (
+              <p className="text-gray-500 text-sm font-bold">No reports match your filters.</p>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4">
