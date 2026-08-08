@@ -57,11 +57,31 @@ export default function Claimed() {
         </div>
       ) : (
         <div className="space-y-4">
-          {claimedItems.map((item) => (
+          {claimedItems.map((item) => {
+            let claimData = { requester: 'Unknown' };
+            try { 
+              if (item.claimed_by) {
+                // Check if it's a JSON string
+                if (item.claimed_by.startsWith('{')) {
+                  claimData = JSON.parse(item.claimed_by); 
+                } else {
+                  // Fallback for old simple strings
+                  claimData.requester = item.claimed_by;
+                }
+              }
+            } catch(e){}
+
+            return (
             <div key={item.id} onClick={() => navigate(`/item/${item.id}`)} className="bg-white rounded-[24px] p-4 shadow-sm border border-gray-100 flex gap-4 cursor-pointer active:scale-[0.98] transition-transform">
-              <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-50 relative">
-                <img src={item.photo_url} alt={item.title} className="w-full h-full object-cover grayscale opacity-70" />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+              <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-50 relative border border-gray-100 flex items-center justify-center">
+                {item.photo_url ? (
+                  <img src={item.photo_url} alt={item.title} className="w-full h-full object-cover grayscale opacity-70" />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-gray-300">
+                    <span className="text-[10px] font-bold">No Image</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 flex items-center justify-center bg-green-900/10 backdrop-blur-[1px]">
                    <CheckCircle2 className="w-8 h-8 text-green-500 drop-shadow-md" fill="white" />
                 </div>
               </div>
@@ -70,12 +90,14 @@ export default function Claimed() {
                 <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
                   <MapPin className="w-3 h-3" /> {item.location}
                 </p>
-                <div className="mt-2 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md inline-block self-start">
-                  Claimed by {item.claimed_by || 'Unknown'}
+                <div className="mt-3 text-xs font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 self-start shadow-sm border border-green-100">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                  Returned to {claimData.requester}
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
