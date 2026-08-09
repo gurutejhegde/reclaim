@@ -243,7 +243,11 @@ export default function ItemDetails() {
 
       {/* Sticky Bottom Actions */}
       <div className="fixed bottom-0 left-0 right-0 p-5 bg-white border-t border-gray-100 flex gap-4 max-w-md mx-auto z-40 pb-safe">
-        {item.status === 'claimed' ? (
+        {item.reported_by === localStorage.getItem('reclaim_user_name') ? (
+           <button disabled className="flex-1 h-14 rounded-3xl bg-gray-100 text-gray-400 font-bold text-base transition-all">
+             This is your report
+           </button>
+        ) : item.status === 'claimed' ? (
            <button disabled className="flex-1 h-14 rounded-3xl bg-gray-200 text-gray-500 font-bold text-base transition-all">
              Item has been Claimed
            </button>
@@ -263,12 +267,12 @@ export default function ItemDetails() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm">
           <div className="bg-white rounded-[32px] p-6 w-full max-w-sm shadow-2xl animate-in fade-in zoom-in duration-200 border border-gray-100">
             <h3 className="text-xl font-black text-gray-800 mb-2">{item.type === 'lost' ? 'Describe the Found Item' : 'Verify Ownership'}</h3>
-            <p className="text-sm text-gray-500 font-medium mb-5">{item.type === 'lost' ? 'To prevent false returns, please describe a specific detail about the item you found (e.g., color, contents, scratch marks).' : 'To prevent false claims, please describe a specific detail about this item (e.g., wallpaper, contents, scratch marks).'}</p>
+            <p className="text-sm text-gray-500 font-medium mb-5">{item.type === 'lost' ? 'Please describe the item you found to help the owner recognize it.' : 'To prevent false claims, please describe a specific detail about this item (e.g., wallpaper, contents, scratch marks).'}</p>
             
             <textarea 
               value={claimProof}
               onChange={(e) => setClaimProof(e.target.value)}
-              placeholder="e.g., The lock screen has a picture of a dog..."
+              placeholder={item.type === 'lost' ? "e.g., A blue waterbottle found in classroom..." : "e.g., The lock screen has a picture of a dog..."}
               className="w-full bg-gray-50 border border-gray-100 rounded-2xl p-4 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[120px] resize-none mb-6"
             />
 
