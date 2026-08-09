@@ -14,7 +14,7 @@ export default function Profile() {
         .from('reports')
         .select('status, reported_by')
         .eq('reported_by', userName)
-        .eq('status', 'claimed');
+        .in('status', ['claimed', 'returned']);
       
       if (data) {
         setReturnCount(data.length);

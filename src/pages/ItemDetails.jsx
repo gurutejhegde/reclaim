@@ -111,6 +111,27 @@ export default function ItemDetails() {
     }
   };
 
+  const handleConfirmReturn = async () => {
+    const { error } = await supabase
+      .from('reports')
+      .update({ status: 'returned' })
+      .eq('id', id);
+
+    if (!error) {
+      setItem({ ...item, status: 'returned' });
+    } else {
+      alert("Failed to confirm return. You might need to update the database status constraint in Supabase SQL editor.");
+    }
+  };
+
+  const userName = localStorage.getItem('reclaim_user_name');
+  let claimData = {};
+  try {
+    if (item.claimed_by) claimData = JSON.parse(item.claimed_by);
+  } catch (e) {}
+  
+  const isOwner = item.type === 'lost' ? item.reported_by === userName : claimData.requester === userName;
+
   return (
     <div className="min-h-screen bg-background pb-32">
       {/* Header Image */}
@@ -159,7 +180,7 @@ export default function ItemDetails() {
           <div className="flex justify-between items-center mb-5">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Recovery Status</span>
             <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
-              {item.status === 'open' ? 'Step 1 of 3' : item.status === 'claimed' ? 'Step 3 of 3' : 'Step 2 of 3'}
+              {item.status === 'open' ? 'Step 1 of 4' : item.status === 'returned' ? 'Step 4 of 4' : item.status === 'claimed' ? 'Step 3 of 4' : 'Step 2 of 4'}
             </span>
           </div>
           
@@ -167,7 +188,7 @@ export default function ItemDetails() {
             {/* Background Track */}
             <div className="absolute left-2 right-2 top-1/2 -translate-y-1/2 h-1 bg-gray-100 rounded-full z-0"></div>
             {/* Active Track */}
-            <div className={`absolute left-2 top-1/2 -translate-y-1/2 h-1 bg-primary rounded-full z-0 transition-all duration-500 ${item.status === 'open' ? 'w-[15%]' : item.status === 'claimed' ? 'w-[95%]' : 'w-1/2'}`}></div>
+            <div className={`absolute left-2 top-1/2 -translate-y-1/2 h-1 bg-primary rounded-full z-0 transition-all duration-500 ${item.status === 'open' ? 'w-[10%]' : item.status === 'returned' ? 'w-[95%]' : item.status === 'claimed' ? 'w-[66%]' : 'w-[33%]'}`}></div>
             
             {/* Step 1: Reported */}
             <div className="relative z-10 flex flex-col items-center">
@@ -185,16 +206,24 @@ export default function ItemDetails() {
               <span className={`text-[9px] font-bold mt-2 absolute -bottom-5 whitespace-nowrap ${item.status !== 'open' ? 'text-primary' : 'text-gray-400'}`}>Contacted</span>
             </div>
 
-            {/* Step 3: Claimed */}
+            {/* Step 3: Approved */}
             <div className="relative z-10 flex flex-col items-center">
-              <div className={`w-5 h-5 rounded-full ring-4 ring-white flex items-center justify-center transition-colors ${item.status === 'claimed' ? 'bg-primary text-white shadow-sm' : 'bg-gray-100'}`}>
-                {item.status === 'claimed' && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+              <div className={`w-5 h-5 rounded-full ring-4 ring-white flex items-center justify-center transition-colors ${item.status === 'claimed' || item.status === 'returned' ? 'bg-primary text-white shadow-sm' : 'bg-gray-100'}`}>
+                {(item.status === 'claimed' || item.status === 'returned') && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
               </div>
-              <span className={`text-[9px] font-bold mt-2 absolute -bottom-5 whitespace-nowrap ${item.status === 'claimed' ? 'text-primary' : 'text-gray-400'}`}>Returned</span>
+              <span className={`text-[9px] font-bold mt-2 absolute -bottom-5 whitespace-nowrap ${item.status === 'claimed' || item.status === 'returned' ? 'text-primary' : 'text-gray-400'}`}>Approved</span>
+            </div>
+
+            {/* Step 4: Returned */}
+            <div className="relative z-10 flex flex-col items-center">
+              <div className={`w-5 h-5 rounded-full ring-4 ring-white flex items-center justify-center transition-colors ${item.status === 'returned' ? 'bg-green-500 text-white shadow-sm' : 'bg-gray-100'}`}>
+                {item.status === 'returned' && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+              </div>
+              <span className={`text-[9px] font-bold mt-2 absolute -bottom-5 whitespace-nowrap ${item.status === 'returned' ? 'text-green-600' : 'text-gray-400'}`}>Returned</span>
             </div>
           </div>
           <div className="mt-8 text-xs text-gray-500 font-medium text-center bg-gray-50 p-2 rounded-xl">
-            This item is currently <strong className="text-gray-700">Open</strong> and looking for a match.
+            {item.status === 'open' ? 'This item is currently Open and looking for a match.' : item.status === 'returned' ? 'This item has been successfully returned!' : 'Return process is underway.'}
           </div>
         </div>
 
@@ -243,13 +272,21 @@ export default function ItemDetails() {
 
       {/* Sticky Bottom Actions */}
       <div className="fixed bottom-0 left-0 right-0 p-5 bg-white border-t border-gray-100 flex gap-4 max-w-md mx-auto z-40 pb-safe">
-        {item.reported_by === localStorage.getItem('reclaim_user_name') ? (
+        {item.status === 'returned' ? (
+           <button disabled className="flex-1 h-14 rounded-3xl bg-green-50 text-green-600 font-bold text-base transition-all">
+             Item Successfully Returned
+           </button>
+        ) : item.status === 'claimed' && isOwner ? (
+           <button onClick={handleConfirmReturn} className="flex-1 h-14 rounded-3xl bg-green-500 text-white font-bold text-base shadow-lg shadow-green-500/20 active:scale-[0.98] transition-all">
+             Confirm Physical Return
+           </button>
+        ) : item.reported_by === userName ? (
            <button disabled className="flex-1 h-14 rounded-3xl bg-gray-100 text-gray-400 font-bold text-base transition-all">
-             This is your report
+             {item.status === 'claimed' ? 'Return Approved' : 'This is your report'}
            </button>
         ) : item.status === 'claimed' ? (
            <button disabled className="flex-1 h-14 rounded-3xl bg-gray-200 text-gray-500 font-bold text-base transition-all">
-             Item has been Claimed
+             Return Approved
            </button>
         ) : item.status === 'pending' || item.status === 'more_info_needed' ? (
            <button disabled className="flex-1 h-14 rounded-3xl bg-gray-200 text-gray-500 font-bold text-base transition-all">

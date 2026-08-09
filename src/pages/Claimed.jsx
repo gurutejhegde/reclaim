@@ -20,7 +20,7 @@ export default function Claimed() {
         const localClaims = JSON.parse(localStorage.getItem('local_claims') || '[]');
         
         const allClaimed = data.filter(item => 
-          item.status === 'claimed' || localClaims.some(c => c.id === item.id)
+          item.status === 'claimed' || item.status === 'returned' || localClaims.some(c => c.id === item.id)
         ).map(item => {
           // Sync the local username if it was claimed locally
           const localMatch = localClaims.find(c => c.id === item.id);
@@ -90,9 +90,9 @@ export default function Claimed() {
                 <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
                   <MapPin className="w-3 h-3" /> {item.location}
                 </p>
-                <div className="mt-3 text-xs font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 self-start shadow-sm border border-green-100">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                  Returned to {claimData.requester}
+                <div className={`mt-3 text-xs font-bold px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 self-start shadow-sm border ${item.status === 'returned' ? 'text-green-700 bg-green-50 border-green-100' : 'text-blue-700 bg-blue-50 border-blue-100'}`}>
+                  <div className={`w-1.5 h-1.5 rounded-full ${item.status === 'returned' ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+                  {item.status === 'returned' ? `Returned to ${claimData.requester}` : `Approved for ${claimData.requester}`}
                 </div>
               </div>
             </div>

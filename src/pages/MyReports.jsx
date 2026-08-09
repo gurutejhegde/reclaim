@@ -87,14 +87,37 @@ export default function MyReports() {
                      {item.type === 'lost' ? 'Lost' : 'Found'}
                    </div>
                    <div className={`px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                     item.status === 'claimed' 
+                     item.status === 'returned' 
+                       ? 'bg-green-100 text-green-800 border-green-300' 
+                       : item.status === 'claimed'
                        ? 'bg-green-50 text-green-700 border-green-200' 
                        : 'bg-gray-100 text-gray-600 border-gray-200'
                    }`}>
-                     {item.status === 'claimed' ? 'Claimed' : 'Open'}
+                     {item.status === 'returned' ? 'Returned' : item.status === 'claimed' ? 'Approved' : item.status === 'pending' || item.status === 'more_info_needed' ? 'Contacted' : 'Open'}
                    </div>
                 </div>
               </div>
+              
+              {/* Quick Confirm Action */}
+              {item.status === 'claimed' && (
+                 <button 
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     const confirmReturn = async () => {
+                       const { error } = await supabase.from('reports').update({ status: 'returned' }).eq('id', item.id);
+                       if (!error) {
+                         setReports(reports.map(r => r.id === item.id ? {...r, status: 'returned'} : r));
+                       } else {
+                         alert("Failed to confirm. You might need to update the database status constraint.");
+                       }
+                     };
+                     confirmReturn();
+                   }}
+                   className="absolute right-4 bottom-4 bg-green-500 text-white px-3 py-1.5 rounded-xl text-[10px] font-bold shadow-md shadow-green-500/20 active:scale-95 transition-transform"
+                 >
+                   Confirm Return
+                 </button>
+              )}
             </div>
           ))}
         </div>

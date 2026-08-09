@@ -40,8 +40,8 @@ export default function Home() {
 
   const filteredReports = reports
     .filter(r => {
-      // 1. Hide ONLY claimed items (Contacted items stay but move to bottom)
-      if (r.status === 'claimed') return false;
+      // 1. Hide claimed and returned items from the feed
+      if (r.status === 'claimed' || r.status === 'returned') return false;
       
       // 2. Filter by Category Button
       if (activeCategory !== 'All' && r.category !== activeCategory) return false;

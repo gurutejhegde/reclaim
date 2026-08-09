@@ -31,7 +31,7 @@ export default function Notifications() {
       const { data, error } = await supabase
         .from('reports')
         .select('*')
-        .in('status', ['pending', 'more_info_needed', 'claimed'])
+        .in('status', ['pending', 'more_info_needed', 'claimed', 'returned'])
         .order('created_at', { ascending: false });
 
       if (data) {
@@ -43,8 +43,8 @@ export default function Notifications() {
           if (item.status === 'pending' && item.reported_by === userName) return true;
           // Claimer sees requests for more info
           if (item.status === 'more_info_needed' && claimData.requester === userName) return true;
-          // Claimer sees meetup instructions
-          if (item.status === 'claimed' && claimData.requester === userName && claimData.meetup) return true;
+          // Claimer sees meetup instructions OR returned success
+          if ((item.status === 'claimed' || item.status === 'returned') && claimData.requester === userName && claimData.meetup) return true;
           
           return false;
         }).map(item => {
@@ -186,16 +186,17 @@ export default function Notifications() {
             const isPending = req.status === 'pending';
             const isMoreInfo = req.status === 'more_info_needed';
             const isMeetup = req.status === 'claimed';
+            const isReturned = req.status === 'returned';
             
             return (
               <div key={req.id} className="bg-white p-5 rounded-[24px] shadow-sm border border-gray-100 relative overflow-hidden">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isPending ? 'bg-orange-50 text-primary' : isMeetup ? 'bg-green-50 text-green-500' : 'bg-red-50 text-red-500'}`}>
-                    {isPending ? <ShieldCheck className="w-5 h-5" /> : isMeetup ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isPending ? 'bg-orange-50 text-primary' : (isMeetup || isReturned) ? 'bg-green-50 text-green-500' : 'bg-red-50 text-red-500'}`}>
+                    {isPending ? <ShieldCheck className="w-5 h-5" /> : (isMeetup || isReturned) ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-800 text-sm">
-                      {isPending ? 'Claim Request' : isMeetup ? 'Return Arranged' : 'More Info Requested'}
+                      {isPending ? 'Claim Request' : isReturned ? 'Item Returned' : isMeetup ? 'Return Approved' : 'More Info Requested'}
                     </h3>
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{req.title}</p>
                   </div>
@@ -321,15 +322,40 @@ export default function Notifications() {
                       </button>
                     </div>
                   </>
-                ) : isMeetup ? (
+                ) : (isMeetup || isReturned) ? (
                   <>
-                    <p className="text-sm text-gray-700 mb-3">Your ownership was verified. The finder has provided instructions for returning your item.</p>
-                    <div className="bg-green-50 p-4 rounded-xl border border-green-100 mb-2 relative z-10 shadow-inner whitespace-pre-wrap">
-                      <p className="text-sm text-green-800 font-medium">{req.claimData.meetup}</p>
+                    <p className="text-sm text-gray-700 mb-3">
+                      {isReturned 
+                        ? (req.type === 'found' ? 'You have confirmed the physical return of this item.' : 'The owner has confirmed the physical return of this item.') 
+                        : (req.type === 'found' ? 'Your ownership was verified. The finder has provided instructions for returning your item.' : 'The owner has approved your claim and provided meetup instructions.')}
+                    </p>
+                    {isMeetup && (
+                      <div className="bg-green-50 p-4 rounded-xl border border-green-100 mb-2 relative z-10 shadow-inner whitespace-pre-wrap">
+                        <p className="text-sm text-green-800 font-medium">{req.claimData.meetup}</p>
+                      </div>
+                    )}
+                    <div className="flex gap-2 mt-2 relative z-10">
+                      <button onClick={() => navigate(`/item/${req.id}`)} className="flex-1 py-3 font-bold text-xs rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5 active:scale-95">
+                        View Post
+                      </button>
+                      
+                      {req.type === 'found' && isMeetup && (
+                        <button 
+                          onClick={async () => {
+                            const { error } = await supabase.from('reports').update({ status: 'returned' }).eq('id', req.id);
+                            if (!error) {
+                              showToast("Item marked as returned!");
+                              setNotifs(notifs.map(n => n.id === req.id ? {...n, status: 'returned'} : n));
+                            } else {
+                              showToast("Failed to confirm. You might need to update the database status constraint.");
+                            }
+                          }}
+                          className="flex-1 py-3 font-bold text-xs rounded-xl bg-green-500 text-white shadow-md shadow-green-500/20 hover:bg-green-600 transition-colors flex items-center justify-center gap-1.5 active:scale-95"
+                        >
+                          Confirm Return
+                        </button>
+                      )}
                     </div>
-                    <button onClick={() => navigate(`/item/${req.id}`)} className="w-full mt-2 py-3 font-bold text-xs rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5 active:scale-95">
-                      View Original Post
-                    </button>
                   </>
                 ) : null}
               </div>
