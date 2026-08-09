@@ -222,51 +222,54 @@ The interface uses status, spacing, hierarchy, and muted states to communicate t
 
 ## Screenshots
 
-The screenshots should show the product as a complete experience rather than simply showing every screen.
+The screenshots demonstrate the product as a complete experience rather than simply showing every screen.
 
-### 1. Home / Discover
+<table align="center">
+  <tr>
+    <td align="center">
+      <b>Home / Discover</b><br><br>
+      <img src="docs/screenshots/home_screen.png" width="250"><br><br>
+      <sup>Browse, search, and filter campus Lost & Found reports.</sup>
+    </td>
+    <td align="center">
+      <b>Report an Item</b><br><br>
+      <img src="docs/screenshots/report.png" width="250"><br><br>
+      <sup>A focused form for creating a lost or found report.</sup>
+    </td>
+    <td align="center">
+      <b>Item Details</b><br><br>
+      <img src="docs/screenshots/item-details.png" width="250"><br><br>
+      <sup>The information needed to identify and act on a report.</sup>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <b>Verification</b><br><br>
+      <img src="docs/screenshots/verification.png" width="250"><br><br>
+      <sup>Claims are reviewed using item-specific information.</sup>
+    </td>
+    <td align="center">
+      <b>Return Confirmation</b><br><br>
+      <img src="docs/screenshots/returned.png" width="250"><br><br>
+      <sup>Ownership verification and physical return are separate steps.</sup>
+    </td>
+    <td align="center">
+      <b>Claimed History</b><br><br>
+      <img src="docs/screenshots/claimed.png" width="250"><br><br>
+      <sup>A record of items that have completed the recovery process.</sup>
+    </td>
+  </tr>
+</table>
 
-![Home Screen](docs/screenshots/home_screen.png)
-
-> **Home — Browse, search, and filter campus Lost & Found reports.**
-
-### 2. Report an Item
-
-![Report Form](docs/screenshots/report.png)
-
-> **Reporting — A focused form for creating a lost or found report.**
-
-### 3. Item Details
-
-![Item Details](docs/screenshots/item-details.png)
-
-> **Item details — The information needed to identify and act on a report.**
-
-### 4. Verification
-
-![Verification](docs/screenshots/verification.png)
-
-> **Verification — Claims are reviewed using item-specific information instead of a simple ownership button.**
-
-This is one of the most important screenshots in the README.
-
-### 5. Contacted State
-
-![Contacted State](docs/screenshots/contacted.png)
-
-> **Contacted — Reports currently being handled are visually separated from open reports.**
-
-### 6. Return Confirmation
-
-![Return Confirmation](docs/screenshots/returned.png)
-
-> **Return — Ownership verification and physical return are treated as separate steps.**
-
-### 7. Claimed / Recovered History
-
-![Claimed History](docs/screenshots/claimed.png)
-
-> **Claimed — A record of items that have completed the recovery process.**
+<table align="center">
+  <tr>
+    <td align="center">
+      <b>Contacted State</b><br><br>
+      <img src="docs/screenshots/contacted.png" width="250"><br><br>
+      <sup>Reports currently being handled are visually separated.</sup>
+    </td>
+  </tr>
+</table>
 
 ---
 
