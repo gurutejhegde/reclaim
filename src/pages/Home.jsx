@@ -78,9 +78,14 @@ export default function Home() {
   return (
     <div className="px-5 pt-6 pb-32 space-y-6 max-w-md mx-auto relative">
       {/* Header */}
-      <header className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-black text-gray-800 tracking-tight">Reclaim</h1>
+      <header className="flex justify-between items-start">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center">
+              <img src="/logo.jpeg" alt="Logo" className="w-full h-full object-contain mix-blend-multiply" />
+            </div>
+            <h1 className="text-2xl font-black text-gray-800 tracking-tight">Reclaim</h1>
+          </div>
           <p className="text-sm text-gray-500 font-medium mt-1">Welcome back, {userName.charAt(0).toUpperCase() + userName.slice(1)}</p>
         </div>
         <div className="flex gap-3">

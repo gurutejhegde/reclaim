@@ -22,10 +22,8 @@ export default function Login() {
 
       <div className="relative z-10 w-full max-w-sm mx-auto space-y-8 pb-20">
         <div className="text-center space-y-2">
-          <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-gray-100 rotate-3">
-             <div className="bg-orange-50 p-3 rounded-2xl text-primary -rotate-3">
-               <Sparkles className="w-8 h-8" />
-             </div>
+          <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+             <img src="/logo.jpeg" alt="Reclaim Logo" className="w-full h-full object-contain mix-blend-multiply" />
           </div>
           <h1 className="text-4xl font-black text-gray-800 tracking-tight">Reclaim</h1>
           <p className="text-gray-500 font-medium text-sm">Never let a lost item become a forgotten one.</p>

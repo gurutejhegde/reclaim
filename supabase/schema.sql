@@ -23,7 +23,7 @@ CREATE TABLE reports (
   reported_by TEXT NOT NULL,
   
   -- Claim tracking
-  status TEXT DEFAULT 'open'::text CHECK (status IN ('open', 'pending', 'more_info_needed', 'claimed')),
+  status TEXT DEFAULT 'open'::text CHECK (status IN ('open', 'pending', 'more_info_needed', 'claimed','returned')),
   
   -- JSON string containing claim requester name, proof text, photos, and meetup instructions
   claimed_by TEXT
